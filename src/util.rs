@@ -10,7 +10,7 @@ unsafe fn from_cstr(s: &*const libc::c_char) -> &str {
 
 pub struct LLVMMessage(*mut i8);
 impl LLVMMessage {
-    unsafe fn get(&self) -> &str { mem::transmute(from_cstr(&(self.0 as *const i8))) }
+    pub unsafe fn get(&self) -> &str { mem::transmute(from_cstr(&(self.0 as *const i8))) }
 }
 impl Drop for LLVMMessage {
     fn drop(&mut self) { unsafe { al::LLVMDisposeMessage(self.0); } }

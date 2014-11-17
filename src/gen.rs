@@ -14,6 +14,10 @@ pub type uint32_t = u32;
 pub type uint16_t = u16;
 pub type uint8_t  = u8;
 
-#[link(name = "bq")]
+#[link(name="bq")]
+extern "C" {
+    pub fn is_gep_in_bounds(v: LLVMValueRef) -> bool;
+}
+
 include!(concat!(env!("OUT_DIR"), "/link_args.rs"))
 include!(concat!(env!("OUT_DIR"), "/temp.rs"))
