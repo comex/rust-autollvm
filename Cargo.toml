@@ -1,0 +1,7 @@
+[package]
+
+name = "autollvm"
+version = "0.0.1"
+authors = ["comex <comexk@gmail.com>"]
+build = "build.rs"
+links = "bq"
