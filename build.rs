@@ -33,7 +33,7 @@ fn split(x: &Vec<u8>) -> Vec<&[u8]> {
 // why am i finding myself dealing with memory management in a *build script*
 fn main() {
     let dst = Path::new(os::getenv("OUT_DIR").unwrap());
-    let llvm_config = os::getenv("LLVM_CONFIG").unwrap_or("llvm_config".into_string());
+    let llvm_config = os::getenv("LLVM_CONFIG").unwrap_or("llvm-config".into_string());
     let mut ldflags = get_output(Command::new(&llvm_config).args(["--ldflags", "--libs", "--system-libs"]));
     ldflags = ldflags.iter().map(|&x| if x == b'\n' { b' ' } else { x }).collect();
     let cflags = get_output(Command::new(&llvm_config).arg("--cflags"));
