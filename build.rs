@@ -2,7 +2,7 @@
 use std::os;
 use std::io::Command;
 use std::io::File;
-use std::io::stdio::stderr;
+//use std::io::stdio::stderr;
 
 fn fail(c: &Command) -> ! {
     panic!("command failed: {}", c);
@@ -49,4 +49,5 @@ fn main() {
     f.write_str("#[link_args = \"").unwrap();
     f.write(ldflags[]).unwrap();
     f.write_str("\"]\n").unwrap();
+    println!("cargo:rustc-flags=-L {} -l bq:static", dst.to_c_str());
 }
