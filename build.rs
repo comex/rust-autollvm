@@ -54,27 +54,23 @@ fn main() {
     let dst = env::var("OUT_DIR").unwrap();
     let dst = Path::new(&dst);
     let llvm_config = env::var("LLVM_CONFIG").unwrap_or("llvm-config".to_string());
-    let mut ldflags = get_output(Command::new(&llvm_config)
-                                 .args(&["--ldflags", "--libfiles", "--system-libs"]));
-    //let ldflags = String::from_utf8(ldflags).unwrap().replace("\n", " ");
-    ldflags = ldflags.iter().map(|&x| if x == b'\n' { b' ' } else { x }).collect();
+    let ldflags = get_output(Command::new(&llvm_config)
+                             .args(&["--ldflags", "--libs", "--system-libs"]));
+    let ldflags = String::from_utf8(ldflags).unwrap().replace("\n", " ");
     let cflags = get_output(Command::new(&llvm_config).arg("--cflags"));
     let cxxflags = get_output(Command::new(&llvm_config).arg("--cxxflags"));
-    let bq_so = dst.join("libbq.dylib");
-    //let libbq_a = dst.join("libbq.a");
+    let bq_o = dst.join("bq.o");
+    let libbq_a = dst.join("libbq.a");
     let temp_rs = dst.join("temp.rs");
     check(Command::new("c++")
           .args(&split(&cxxflags))
-          .args(&["-dynamiclib", "-Wl,-all_load", "-O3", "-o"])
-          .arg(&bq_so)
-          .arg("src/bq.cpp")
-          .args(&split(&ldflags)));
-    /*
+          .args(&["-O3", "-c", "-o"])
+          .arg(&bq_o)
+          .arg("src/bq.cpp"));
     check(Command::new("ar")
           .arg("rcs")
           .arg(&libbq_a)
-          .arg(&bq_so));
-          */
+          .arg(&bq_o));
     let mut options: bindgen::BindgenOptions = std::default::Default::default();
     options.match_pat.push("llvm".to_string());
     options.clang_args.push("src/autollvm.h".to_string());
@@ -82,8 +78,8 @@ fn main() {
         options.clang_args.push(arg.to_str().unwrap().to_string());
     }
     let bindout = bindgen::Bindings::generate(&options, None, None).unwrap().to_string();
-    //let bindout = bindout.replace("extern \"C\" {", format!("#[link_args = \"{}\"]\nextern \"C\" {{", ldflags));
     let mut f = File::create(&temp_rs).unwrap();
+    f.write_all(format!("#[link(name = \"c++\")]\n#[link_args = \"-all_load {}\"]\nextern \"C\" {{}}", ldflags).as_bytes()).unwrap();
     f.write_all(bindout.as_bytes()).unwrap();
-    println!("cargo:rustc-flags=-L {} -l bq:dylib", dst.to_str().unwrap());
+    println!("cargo:rustc-flags=-L {} -l static=bq", dst.to_str().unwrap());
 }

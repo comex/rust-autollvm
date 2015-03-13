@@ -1,3 +1,5 @@
-Very simple Cargo wrapper that bindgens llvm and includes a handful of helper methods.
+Very simple Cargo wrapper that bindgens llvm and includes some basic helpers.
+
+If you don't have llvm-config in PATH, you must specify LLVM_CONFIG in the environment.
 
 license: public domain
