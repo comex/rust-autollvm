@@ -19,5 +19,4 @@ extern "C" {
     pub fn is_gep_in_bounds(v: LLVMValueRef) -> bool;
 }
 
-include!(concat!(env!("OUT_DIR"), "/link_args.rs"))
-include!(concat!(env!("OUT_DIR"), "/temp.rs"))
+include!(concat!(env!("OUT_DIR"), "/temp.rs"));

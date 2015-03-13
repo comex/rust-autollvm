@@ -4,3 +4,9 @@ name = "autollvm"
 version = "0.0.1"
 authors = ["comex <comexk@gmail.com>"]
 build = "build.rs"
+[lib]
+name = "autollvm"
+crate-type = ["dylib"]
+[build-dependencies.rust-bindgen]
+git = "https://github.com/crabtw/rust-bindgen.git"
+

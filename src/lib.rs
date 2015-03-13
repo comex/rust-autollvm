@@ -1,6 +1,5 @@
-#![feature(tuple_indexing)]
-#![feature(macro_rules)]
-#![feature(globs)]
+#![feature(link_args)]
+#![feature(libc)]
 extern crate libc;
 pub use gen::*;
 mod gen;

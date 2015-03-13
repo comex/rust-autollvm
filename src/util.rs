@@ -1,11 +1,11 @@
 use gen as al;
 pub use gen::{LLVMValueRef, LLVMModuleRef, LLVMBasicBlockRef, LLVMUseRef, LLVMTargetDataRef, LLVMTypeRef, LLVMBuilderRef};
 
-use std::{mem, c_str, ptr};
+use std::{mem, ffi, str, ptr};
 use libc;
 
 unsafe fn from_cstr(s: &*const libc::c_char) -> &str {
-    mem::transmute(c_str::CString::new(*s as *const i8, false).as_str().unwrap())
+    str::from_utf8(ffi::CStr::from_ptr(*s).to_bytes()).unwrap()
 }
 
 pub struct LLVMMessage(*mut i8);
@@ -24,7 +24,8 @@ macro_rules! llvm_iter { ($inner:ty, $container:ty, $itername:ident, $first:expr
             $itername { inr: $first(f), end: $last(f) }
         }
     }
-    impl Iterator<$inner> for $itername {
+    impl Iterator for $itername {
+        type Item = $inner;
         fn next(&mut self) -> Option<$inner> {
             if self.inr == ptr::null_mut() {
                 None
@@ -36,11 +37,11 @@ macro_rules! llvm_iter { ($inner:ty, $container:ty, $itername:ident, $first:expr
         }
     }
 } }
-llvm_iter!(LLVMBasicBlockRef, LLVMValueRef, BBIter, al::LLVMGetFirstBasicBlock, al::LLVMGetLastBasicBlock, al::LLVMGetNextBasicBlock)
-//llvm_iter!(LLVMValueRef, LLVMModuleRef, GlobalIter, al::LLVMGetFirstGlobal, al::LLVMGetLastGlobal, al::LLVMGetNextGlobal)
-//llvm_iter!(LLVMValueRef, LLVMModuleRef, FunctionIter, al::LLVMGetFirstFunction, al::LLVMGetLastFunction, al::LLVMGetNextFunction)
-llvm_iter!(LLVMValueRef, LLVMValueRef, ParamIter, al::LLVMGetFirstParam, al::LLVMGetLastParam, al::LLVMGetNextParam)
-llvm_iter!(LLVMValueRef, LLVMBasicBlockRef, InstIter, al::LLVMGetFirstInstruction, al::LLVMGetLastInstruction, al::LLVMGetNextInstruction)
+llvm_iter!(LLVMBasicBlockRef, LLVMValueRef, BBIter, al::LLVMGetFirstBasicBlock, al::LLVMGetLastBasicBlock, al::LLVMGetNextBasicBlock);
+//llvm_iter!(LLVMValueRef, LLVMModuleRef, GlobalIter, al::LLVMGetFirstGlobal, al::LLVMGetLastGlobal, al::LLVMGetNextGlobal);
+//llvm_iter!(LLVMValueRef, LLVMModuleRef, FunctionIter, al::LLVMGetFirstFunction, al::LLVMGetLastFunction, al::LLVMGetNextFunction);
+llvm_iter!(LLVMValueRef, LLVMValueRef, ParamIter, al::LLVMGetFirstParam, al::LLVMGetLastParam, al::LLVMGetNextParam);
+llvm_iter!(LLVMValueRef, LLVMBasicBlockRef, InstIter, al::LLVMGetFirstInstruction, al::LLVMGetLastInstruction, al::LLVMGetNextInstruction);
 
 pub struct UseIter { inr: LLVMUseRef }
 impl UseIter {
@@ -48,7 +49,8 @@ impl UseIter {
         UseIter { inr: al::LLVMGetFirstUse(v) }
     }
 }
-impl Iterator<LLVMUseRef> for UseIter {
+impl Iterator for UseIter {
+    type Item = LLVMUseRef;
     fn next(&mut self) -> Option<LLVMUseRef> {
         if self.inr == ptr::null_mut() {
             None
@@ -60,13 +62,14 @@ impl Iterator<LLVMUseRef> for UseIter {
     }
 }
 
-pub struct OperandIter { v: LLVMValueRef, i: uint, cnt: uint }
+pub struct OperandIter { v: LLVMValueRef, i: usize, cnt: usize }
 impl OperandIter {
     pub unsafe fn new(v: LLVMValueRef) -> OperandIter {
-        OperandIter { v: v, i: 0, cnt: al::LLVMGetNumOperands(v) as uint }
+        OperandIter { v: v, i: 0, cnt: al::LLVMGetNumOperands(v) as usize }
     }
 }
-impl Iterator<LLVMValueRef> for OperandIter {
+impl Iterator for OperandIter {
+    type Item = LLVMValueRef;
     fn next(&mut self) -> Option<LLVMValueRef> {
         if self.i == self.cnt {
             None
@@ -100,7 +103,7 @@ pub unsafe fn get_function_insn_descs(f: LLVMValueRef) -> Vec<String> {
             multiline_str.push_str(line);
             multiline_str.push('\n');
         } else {
-            results.push(line.into_string());
+            results.push(line.to_string());
         }
     }
     /*
