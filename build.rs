@@ -1,29 +1,30 @@
-#![feature(path, io, std_misc)]
 #![allow(plugin_as_library)]
-use std::process::Command;
-use std::fs::File;
-use std::io::Write;
-//use std::io::stderr;
-use std::os::unix::OsStrExt;
-use std::ffi::OsStr;
-use std::path::Path;
-use std::env;
-//use std::os::unix::AsRawFd;
-
-extern crate bindgen;
-//extern crate libc;
-
-fn fail(c: &Command) -> ! {
-    panic!("command failed: {:?}", c);
-}
 
 /*
+#![feature(libc)]
+extern crate libc;
+use std::os::unix::prelude::AsRawFd;
 fn get_stderr_dammit() {
     if let Ok(file) = File::create("/dev/tty") {
         unsafe { libc::dup2(file.as_raw_fd(), 2); }
     }
 }
 */
+
+use std::process::Command;
+use std::fs::File;
+use std::io::Write;
+use std::io::stderr;
+use std::os::unix::ffi::OsStrExt;
+use std::ffi::OsStr;
+use std::path::Path;
+use std::env;
+
+extern crate bindgen;
+
+fn fail(c: &Command) -> ! {
+    panic!("command failed: {:?}", c);
+}
 
 fn get_output(c: &mut Command) -> Vec<u8> {
     let o = c.output().unwrap_or_else(|_| fail(c));
@@ -47,6 +48,19 @@ fn split(x: &Vec<u8>) -> Vec<&OsStr> {
      .map(|arg| OsStr::from_bytes(arg))
      .collect()
 }
+
+struct StdLogger;
+
+impl bindgen::Logger for StdLogger {
+    fn error(&self, msg: &str) {
+        writeln!(stderr(), "{}", msg).unwrap();
+    }
+
+    fn warn(&self, msg: &str) {
+        writeln!(stderr(), "{}", msg).unwrap();
+    }
+}
+
 
 // why am i finding myself dealing with memory management in a *build script*
 fn main() {
@@ -77,9 +91,14 @@ fn main() {
     for arg in split(&cflags) {
         options.clang_args.push(arg.to_str().unwrap().to_string());
     }
-    let bindout = bindgen::Bindings::generate(&options, None, None).unwrap().to_string();
+    //writeln!(&mut stderr(), "{:?}", options.clang_args).unwrap();
+    let bindings = bindgen::Bindings::generate(&options, Some(&StdLogger as &bindgen::Logger), None).unwrap();
+    bindings.write(Box::new(stderr()));
+    //let bindout = bindings.to_string();
+    //if bindout.len() == 0 { panic!("bindgen r dumb"); }
     let mut f = File::create(&temp_rs).unwrap();
     f.write_all(format!("#[link(name = \"c++\")]\n#[link_args = \"-all_load {}\"]\nextern \"C\" {{}}", ldflags).as_bytes()).unwrap();
-    f.write_all(bindout.as_bytes()).unwrap();
+    //f.write_all(bindout.as_bytes()).unwrap();
+    bindings.write(Box::new(f)).unwrap(); // x.x
     println!("cargo:rustc-flags=-L {} -l static=bq", dst.to_str().unwrap());
 }

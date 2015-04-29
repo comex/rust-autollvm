@@ -4,10 +4,10 @@ name = "autollvm"
 version = "0.0.1"
 authors = ["comex <comexk@gmail.com>"]
 build = "build.rs"
-repository = "https://github.com/comex/autollvm"
+repository = "https://github.com/comex/rust-autollvm"
 license = "NCSA"
 readme = "README"
-description = "bindgens your system LLVM, plus exactly one C++ helper function"
+description = "bindgens your system LLVM, plus some basic helpers"
 
 [lib]
 name = "autollvm"

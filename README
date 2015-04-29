@@ -1,4 +1,4 @@
-Very simple Cargo wrapper that bindgens llvm and includes some basic helpers.
+Very simple Cargo wrapper that bindgens your system llvm and includes some basic helpers.
 
 If you don't have llvm-config in PATH, you must specify LLVM_CONFIG in the environment.
 
