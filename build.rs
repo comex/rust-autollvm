@@ -93,12 +93,11 @@ fn main() {
     }
     //writeln!(&mut stderr(), "{:?}", options.clang_args).unwrap();
     let bindings = bindgen::Bindings::generate(&options, Some(&StdLogger as &bindgen::Logger), None).unwrap();
-    bindings.write(Box::new(stderr()));
-    //let bindout = bindings.to_string();
-    //if bindout.len() == 0 { panic!("bindgen r dumb"); }
+    let bindout = bindings.to_string();
+    if bindout.len() == 0 { panic!("bindgen r dumb"); }
     let mut f = File::create(&temp_rs).unwrap();
     f.write_all(format!("#[link(name = \"c++\")]\n#[link_args = \"-all_load {}\"]\nextern \"C\" {{}}", ldflags).as_bytes()).unwrap();
-    //f.write_all(bindout.as_bytes()).unwrap();
-    bindings.write(Box::new(f)).unwrap(); // x.x
+    f.write_all(bindout.as_bytes()).unwrap();
+    //bindings.write(Box::new(f)).unwrap(); // x.x
     println!("cargo:rustc-flags=-L {} -l static=bq", dst.to_str().unwrap());
 }

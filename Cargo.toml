@@ -12,6 +12,6 @@ description = "bindgens your system LLVM, plus some basic helpers"
 [lib]
 name = "autollvm"
 crate-type = ["dylib"]
-[build-dependencies.rust-bindgen]
+[build-dependencies.bindgen]
 git = "https://github.com/crabtw/rust-bindgen.git"
 
