@@ -2,6 +2,7 @@
 #![allow(non_upper_case_globals)]
 #![allow(dead_code)]
 #![allow(non_snake_case)]
+include!(concat!(env!("OUT_DIR"), "/temp.rs"));
 
 use libc::{size_t,uintptr_t,off_t};
 
@@ -38,4 +39,3 @@ pub unsafe fn LLVMInitializeNativeAsmParser() -> bool { do_LLVMInitializeNativeA
 pub unsafe fn LLVMInitializeNativeAsmPrinter() -> bool { do_LLVMInitializeNativeAsmPrinter() }
 pub unsafe fn LLVMInitializeNativeDisassembler() -> bool { do_LLVMInitializeNativeDisassembler() }
 
-include!(concat!(env!("OUT_DIR"), "/temp.rs"));
