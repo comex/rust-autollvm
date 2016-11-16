@@ -72,6 +72,8 @@ fn main() {
     let ldflags = get_output(Command::new(&llvm_config)
                              .args(&["--ldflags", "--libs", "--system-libs"]));
     let ldflags = String::from_utf8(ldflags).unwrap().replace("\n", " ");
+    // hack: without this I get linker errors due to missing -ledit
+    let ldflags = ldflags.replace("-lLLVMLineEditor ", "");
     let cflags = get_output(Command::new(&llvm_config).arg("--cflags"));
     let cxxflags = get_output(Command::new(&llvm_config).arg("--cxxflags"));
     let bq_o = dst.join("bq.o");
